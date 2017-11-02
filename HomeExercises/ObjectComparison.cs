@@ -1,4 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using FluentAssertions;
+using FluentAssertions.Equivalency;
 using NUnit.Framework;
 
 namespace HomeExercises
@@ -15,10 +19,8 @@ namespace HomeExercises
 			var expectedTsar = new Person("Ivan IV The Terrible", 54, 170, 70,
 				new Person("Vasili III of Russia", 28, 170, 60, null));
 
-			
-		    actualTsar.ShouldBeEquivalentTo(expectedTsar, options => options
-                .Excluding(o => o.Id)
-                .Excluding(o => o.Parent.Id));
+            actualTsar.ShouldBeEquivalentTo(expectedTsar, options => options
+		        .Excluding(o => o.SelectedMemberInfo.Name == "Id"));
 		}
 
 		[Test]
