@@ -7,146 +7,58 @@ namespace HomeExercises
 {
 	public class NumberValidatorTests
 	{
-	    [TestCase(3, 2, false, ".00")]
-	    [TestCase(2, 1, false, ",0")]
-	    public void IsValidNumber_ShouldBeFalse_IfCommaOrPointIsNotLeadByDigits(int precision, int scale, bool onlyPositive, string value)
-	    {
-	        new NumberValidator(precision, scale, onlyPositive).IsValidNumber(value).Should().BeFalse();
-	    }
+		[TestCase(3, 2, true, "1.23", TestName = "ForPositiveIfOnlyPositive")]
+		[TestCase(3, 2, true, "0.0", TestName = "ForZeroIfOnlyPositive")]
+		[TestCase(4, 2, false, "-1.23", TestName = "IfPushingLimitsWithSign")]
+		[TestCase(3, 2, false, "1.23", TestName = "IfPointExceedsPrecisionButDigitsDont")]
+		[TestCase(3, 2, false, "1,23", TestName = "IfCommaInsteadOfPoint")]
+		public void IsValidNumber_ShouldBeTrue(int precision, int scale, bool onlyPositive, string value)
+		{
+			new NumberValidator(precision, scale, onlyPositive).IsValidNumber(value).Should().BeTrue();
+		}
 
-        [TestCase(3, 2, false, "-1.")]
-	    [TestCase(2, 1, false, "0,")]
-	    public void IsValidNumber_ShouldBeFalse_IfCommaOrPointIsNotFollowedByDigits(int precision, int scale, bool onlyPositive, string value)
-	    {
-	        new NumberValidator(precision, scale, onlyPositive).IsValidNumber(value).Should().BeFalse();
-	    }
 
-        [TestCase(3, 2, false, "1,23")]
-	    [TestCase(2, 1, false, "0,0")]
-	    public void IsValidNumber_ShouldBeTrue_IfCommaInsteadOfPoint(int precision, int scale, bool onlyPositive, string value)
-	    {
-	        new NumberValidator(precision, scale, onlyPositive).IsValidNumber(value).Should().BeTrue();
-	    }
+		[TestCase(3, 2, false, ".00", TestName = "IfPointIsNotLeadByDigits")]
+		[TestCase(2, 1, false, ",0", TestName = "IfCommaIsNotLeadByDigits")]
+		[TestCase(3, 2, false, "-1.", TestName = "IfPointIsNotFollowedByDigits")]
+		[TestCase(2, 1, false, "0,", TestName = "IfCommaIsNotFollowedByDigits")]
+		[TestCase(20, 19, false, "-", TestName = "ForBareSign")]
+		[TestCase(20, 19, false, "+Sample.Text", TestName = "ForNotNumbers")]
+		[TestCase(3, 2, true, "00.00", TestName = "IfPrecisionExceedsLimitWithLeadingZeroes")]
+		[TestCase(3, 2, true, "+1.23", TestName = "IfPrecisionExceedsLimitWithPlusSign")]
+		[TestCase(3, 2, false, "-1.23", TestName = "IfPrecisionExceedsLimitWithMinusSign")]
+		[TestCase(3, 2, true, "41.23", TestName = "ForPositiveIfPrecisionExceedsLimit")]
+		[TestCase(3, 2, true, "1.234", TestName = "IfScaleExceedsLimit")]
+		[TestCase(3, 2, true, "-1.23", TestName = "ForNegativeIfOnlyPositive")]
+		public void IsValidNumber_ShouldBeFalse(int precision, int scale, bool onlyPositive, string value)
+		{
+			new NumberValidator(precision, scale, onlyPositive).IsValidNumber(value).Should().BeFalse();
+		}
 
-        [TestCase(3, 2, false, "1.23")]
-	    [TestCase(2, 1, false, "0.0")]
-	    public void IsValidNumber_ShouldBeTrue_IfPointExceedsPrecisionButDigitsDont(int precision, int scale, bool onlyPositive, string value)
-	    {
-	        new NumberValidator(precision, scale, onlyPositive).IsValidNumber(value).Should().BeTrue();
-	    }
 
-        [TestCase(20, 19, false, "-")]
-	    [TestCase(20, 19, false, "+")]
-	    public void IsValidNumber_ShouldBeFalse_ForBareSign(int precision, int scale, bool onlyPositive, string value)
-	    {
-	        new NumberValidator(precision, scale, onlyPositive).IsValidNumber(value).Should().BeFalse();
-	    }
+		[TestCase(1, 0, true)]
+		[TestCase(3, 1, true)]
+		public void NumberValidator_WhileConstructingFromNonNegativePrecisonGreaterThanNonNegativeScale_DoesntThrowException(int precision, int scale, bool onlyPositive)
+		{
+			ConstructingNumberValidator(precision, scale, onlyPositive).ShouldNotThrow();
+		}
 
-        [TestCase(20, 19, false, "-a.sd")]
-	    [TestCase(20, 19, false, "+Sample.Text")]
-	    public void IsValidNumber_ShouldBeFalse_ForNotNumbers(int precision, int scale, bool onlyPositive, string value)
-	    {
-	        new NumberValidator(precision, scale, onlyPositive).IsValidNumber(value).Should().BeFalse();
-	    }
 
-        [TestCase(3, 2, true, "00.00")]
-	    [TestCase(1, 0, true, "00")]
-	    public void IsValidNumber_ShouldBeFalse_IfPrecisionExceedsLimitWithLeadingZeroes(int precision, int scale, bool onlyPositive, string value)
-	    {
-	        new NumberValidator(precision, scale, onlyPositive).IsValidNumber(value).Should().BeFalse();
-	    }
+		[TestCase(-1, 2, true, TestName = "WhileConstructingFromNegativePrecison")]
+		[TestCase(7, 7, true, TestName = "WhileConstructingFromPrecisonEqualToScale")]
+		[TestCase(3, 4, true, TestName = "WhileConstructingFromPrecisonLessThanScale")]
+		[TestCase(1, -2, true, TestName = "WhileConstructingFromNegativePrecisonAndNonNegativeScale")]
+		public void NumberValidator_ShouldThrowArgumentException(int precision, int scale, bool onlyPositive)
+		{
+			ConstructingNumberValidator(precision, scale, onlyPositive).ShouldThrow<ArgumentException>();
+		}
 
-        [TestCase(4, 2, false, "-1.23")]
-	    [TestCase(2, 0, true, "+0")]
-	    public void IsValidNumber_ShouldBeTrue_IfPushingLimitsWithSign(int precision, int scale, bool onlyPositive, string value)
-	    {
-	        new NumberValidator(precision, scale, onlyPositive).IsValidNumber(value).Should().BeTrue();
-	    }
 
-        [TestCase(3, 2, true, "+1.23")]
-	    [TestCase(1, 0, true, "+0")]
-	    public void IsValidNumber_ShouldBeFalse_IfPrecisionExceedsLimitWithPlusSign(int precision, int scale, bool onlyPositive, string value)
-	    {
-	        new NumberValidator(precision, scale, onlyPositive).IsValidNumber(value).Should().BeFalse();
-	    }
-
-        [TestCase(3, 2, "-1.23")]
-	    [TestCase(1, 0, "-0")]
-	    public void IsValidNumber_ShouldBeFalse_IfPrecisionExceedsLimitWithMinusSign(int precision, int scale, string value)
-	    {
-	        new NumberValidator(precision, scale).IsValidNumber(value).Should().BeFalse();
-	    }
-
-        [TestCase(3, 2, true, "41.23")]
-	    [TestCase(1, 0, true, "00")]
-	    public void IsValidNumber_ShouldBeFalse_ForPositiveIfPrecisionExceedsLimit(int precision, int scale, bool onlyPositive, string value)
-	    {
-	        new NumberValidator(precision, scale, onlyPositive).IsValidNumber(value).Should().BeFalse();
-	    }
-
-        [TestCase(3, 2, true, "1.234")]
-	    [TestCase(1, 0, true, "0.0")]
-	    public void IsValidNumber_ShouldBeFalse_IfScaleExceedsLimit(int precision, int scale, bool onlyPositive, string value)
-	    {
-	        new NumberValidator(precision, scale, onlyPositive).IsValidNumber(value).Should().BeFalse();
-	    }
-
-        [TestCase(3, 2, true, "0.0")]
-	    [TestCase(1, 0, true, "0")]
-	    public void IsValidNumber_ShouldBeTrue_ForZeroIfOnlyPositive(int precision, int scale, bool onlyPositive, string value)
-	    {
-	        new NumberValidator(precision, scale, onlyPositive).IsValidNumber(value).Should().BeTrue();
-	    }
-
-        [TestCase(3, 2, true, "1.23")]
-	    [TestCase(1, 0, true, "3")]
-	    public void IsValidNumber_ShouldBeTrue_ForPositiveIfOnlyPositive(int precision, int scale, bool onlyPositive, string value)
-	    {
-	        new NumberValidator(precision, scale, onlyPositive).IsValidNumber(value).Should().BeTrue();
-	    }
-
-        [TestCase(3, 2, true, "-1.23")]
-	    [TestCase(1, 0, true, "-3")]
-	    public void IsValidNumber_ShouldBeFalse_ForNegativeIfOnlyPositive(int precision, int scale, bool onlyPositive, string value)
-	    {
-	        new NumberValidator(precision, scale, onlyPositive).IsValidNumber(value).Should().BeFalse();
-        }
-
-        [TestCase(-1, 2, true)]
-	    [TestCase(-1, -2, true)]
-        public void NumberValidator_ThrowsArgumentException_WhileConstructingFromNegativePrecison(int precision, int scale, bool onlyPositive)
-	    {
-	        Assert.Throws<ArgumentException>(() => new NumberValidator(precision, scale, onlyPositive));
-        }
-
-	    [TestCase(7, 7, true)]
-	    [TestCase(1, 1, true)]
-        public void NumberValidator_ThrowsArgumentException_WhileConstructingFromPrecisonEqualToScale(int precision, int scale, bool onlyPositive)
-	    {
-	        Assert.Throws<ArgumentException>(() => new NumberValidator(precision, scale, onlyPositive));
-	    }
-
-	    [TestCase(1, 2, true)]
-	    [TestCase(3, 4, true)]
-        public void NumberValidator_ThrowsArgumentException_WhileConstructingFromPrecisonLessThanScale(int precision, int scale, bool onlyPositive)
-	    {
-	        Assert.Throws<ArgumentException>(() => new NumberValidator(precision, scale, onlyPositive));
-	    }
-
-        [TestCase(1, 0, true)]
-        [TestCase(3, 1, true)]
-        public void NumberValidator_DoesntThrowException_WhileConstructingFromNonNegativePrecisonGreaterThanNonNegativeScale(int precision, int scale, bool onlyPositive)
-	    {
-	        Assert.DoesNotThrow(() => new NumberValidator(precision, scale, onlyPositive));
-        }
-
-	    [TestCase(1, -2, true)]
-	    [TestCase(3, -1, true)]
-	    public void NumberValidator_ThrowsArgumentException_WhileConstructingFromNegativePrecisonAndNonNegativeScale(int precision, int scale, bool onlyPositive)
-	    {
-	        Assert.Throws<ArgumentException>(() => new NumberValidator(precision, scale, onlyPositive));
-	    }
-    }
+		private static Action ConstructingNumberValidator(int precision, int scale, bool onlyPositive)
+		{
+			return (() => new NumberValidator(precision, scale, onlyPositive));
+		}
+	}
 
 	public class NumberValidator
 	{
